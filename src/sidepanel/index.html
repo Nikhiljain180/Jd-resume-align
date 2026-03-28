@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlignLocal</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <div class="brand">
+          <span class="logo" aria-hidden="true">AL</span>
+          <div>
+            <h1>AlignLocal</h1>
+            <p class="tagline">Local JD ↔ resume coverage (lite)</p>
+          </div>
+        </div>
+        <a class="link-quiet" href="https://github.com" target="_blank" rel="noreferrer"
+          >GitHub (set repo URL in README)</a
+        >
+      </header>
+
+      <section class="panel trust" aria-label="Trust">
+        <p>
+          Analysis runs in this side panel on your device. Data stays in your browser unless you
+          copy it out. This is <strong>not</strong> a hiring prediction.
+        </p>
+      </section>
+
+      <section class="panel" aria-label="Resume">
+        <h2>Resume</h2>
+        <label class="field">
+          <span>Version name</span>
+          <input type="text" id="resumeName" placeholder="e.g. SWE — general" autocomplete="off" />
+        </label>
+        <label class="field">
+          <span>Resume text</span>
+          <textarea id="resumeBody" rows="8" placeholder="Paste your resume text here"></textarea>
+        </label>
+        <div class="row">
+          <button type="button" class="btn primary" id="btnSaveResume">Save version</button>
+          <select id="resumeSelect" aria-label="Saved versions"></select>
+          <button type="button" class="btn ghost" id="btnDeleteResume">Delete</button>
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Job description">
+        <h2>Job description</h2>
+        <div class="row">
+          <button type="button" class="btn primary" id="btnPullLinkedIn">Load from LinkedIn tab</button>
+          <button type="button" class="btn ghost" id="btnClearJd">Clear</button>
+        </div>
+        <label class="field">
+          <span>JD text</span>
+          <textarea id="jdBody" rows="10" placeholder="Paste a job description or pull from LinkedIn"></textarea>
+        </label>
+      </section>
+
+      <section class="panel actions">
+        <button type="button" class="btn primary wide" id="btnAnalyze">Analyze coverage</button>
+      </section>
+
+      <section class="panel results hidden" id="results" aria-live="polite">
+        <h2>Results</h2>
+        <div class="score-row">
+          <div class="ring" id="scoreRing" role="img" aria-label="Coverage score">
+            <span id="scorePct">—</span>
+          </div>
+          <p class="score-caption" id="scoreCaption"></p>
+        </div>
+        <p class="muted" id="disclaimer"></p>
+
+        <h3>Terms to justify (if true)</h3>
+        <p class="muted small">Highlights JD emphasis not echoed in your resume wording—only add if honest.</p>
+        <ul class="chips" id="missingTerms"></ul>
+
+        <h3>JD sections with low keyword overlap</h3>
+        <ul class="list" id="weakParas"></ul>
+      </section>
+
+      <p class="error hidden" id="error" role="alert"></p>
+
+      <footer class="footer">
+        <span>Open source · v0.1</span>
+        <span class="footer-note" id="modeBadge">Mode: lite (TF‑IDF)</span>
+      </footer>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

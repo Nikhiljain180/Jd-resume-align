@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "AlignLocal: JD & resume coverage",
+  "version": "0.1.0",
+  "description": "See how well your resume covers a job posting. Lite analysis runs locally in your browser.",
+  "permissions": ["storage", "sidePanel", "tabs", "scripting"],
+  "host_permissions": ["https://www.linkedin.com/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open AlignLocal side panel"
+  },
+  "side_panel": {
+    "default_path": "sidepanel/index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.linkedin.com/*"],
+      "js": ["content/linkedin.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
