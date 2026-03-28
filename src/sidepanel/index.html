@@ -13,19 +13,40 @@
           <span class="logo" aria-hidden="true">AL</span>
           <div>
             <h1>AlignLocal</h1>
-            <p class="tagline">Local JD ↔ resume coverage (lite)</p>
+            <p class="tagline">Local JD ↔ resume coverage</p>
           </div>
         </div>
-        <a class="link-quiet" href="https://github.com" target="_blank" rel="noreferrer"
-          >GitHub (set repo URL in README)</a
+        <a
+          class="link-quiet"
+          href="https://github.com/Nikhiljain180/Jd-resume-align"
+          target="_blank"
+          rel="noreferrer"
+          >GitHub</a
         >
       </header>
 
       <section class="panel trust" aria-label="Trust">
         <p>
-          Analysis runs in this side panel on your device. Data stays in your browser unless you
-          copy it out. This is <strong>not</strong> a hiring prediction.
+          Analysis runs on your device. Resume and JD text stay in your browser unless you copy
+          them. This is <strong>not</strong> a hiring or ATS prediction.
         </p>
+      </section>
+
+      <section class="panel" aria-label="Analysis mode">
+        <h2>Analysis mode</h2>
+        <fieldset class="modes">
+          <label class="radio">
+            <input type="radio" name="mode" value="lite" checked />
+            <span><strong>Lite</strong> — fast keyword / emphasis (TF‑IDF)</span>
+          </label>
+          <label class="radio">
+            <input type="radio" name="mode" value="semantic" />
+            <span
+              ><strong>Semantic</strong> — local MiniLM embeddings (downloads model on first run
+              ~tens of MB from Hugging Face / jsDelivr)</span
+            >
+          </label>
+        </fieldset>
       </section>
 
       <section class="panel" aria-label="Resume">
@@ -59,6 +80,7 @@
 
       <section class="panel actions">
         <button type="button" class="btn primary wide" id="btnAnalyze">Analyze coverage</button>
+        <p class="muted small" id="analyzeHint"></p>
       </section>
 
       <section class="panel results hidden" id="results" aria-live="polite">
@@ -72,18 +94,21 @@
         <p class="muted" id="disclaimer"></p>
 
         <h3>Terms to justify (if true)</h3>
-        <p class="muted small">Highlights JD emphasis not echoed in your resume wording—only add if honest.</p>
+        <p class="muted small">
+          From lite keyword signal—only add if accurate. Shown for both modes as a complement to
+          the headline score.
+        </p>
         <ul class="chips" id="missingTerms"></ul>
 
-        <h3>JD sections with low keyword overlap</h3>
+        <h3 id="weakHeading">JD sections with weaker overlap</h3>
         <ul class="list" id="weakParas"></ul>
       </section>
 
       <p class="error hidden" id="error" role="alert"></p>
 
       <footer class="footer">
-        <span>Open source · v0.1</span>
-        <span class="footer-note" id="modeBadge">Mode: lite (TF‑IDF)</span>
+        <span>Open source · v0.2</span>
+        <span class="footer-note" id="modeBadge">Mode: lite</span>
       </footer>
     </div>
     <script type="module" src="./main.ts"></script>

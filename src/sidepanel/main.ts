@@ -1,5 +1,7 @@
 import { analyzeLite } from "../lib/analyze-lite.js";
 import { deleteResume, listResumes, saveResume } from "../lib/storage.js";
+import type { AnalysisMode, GapTerm, ParagraphCoverage } from "../lib/types.js";
+
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T | null;
 
 const resumeName = $("#resumeName") as HTMLInputElement;
@@ -19,8 +21,16 @@ const scoreCaption = $("#scoreCaption") as HTMLElement;
 const disclaimer = $("#disclaimer") as HTMLElement;
 const missingTerms = $("#missingTerms") as HTMLUListElement;
 const weakParas = $("#weakParas") as HTMLUListElement;
+const weakHeading = $("#weakHeading") as HTMLHeadingElement;
 const errorEl = $("#error") as HTMLElement;
 const scoreRing = $("#scoreRing") as HTMLElement;
+const modeBadge = $("#modeBadge") as HTMLElement;
+const analyzeHint = $("#analyzeHint") as HTMLElement;
+
+function selectedMode(): "lite" | "semantic" {
+  const r = document.querySelector('input[name="mode"]:checked') as HTMLInputElement | null;
+  return r?.value === "semantic" ? "semantic" : "lite";
+}
 
 function showError(msg: string) {
   errorEl.textContent = msg;
@@ -120,7 +130,18 @@ btnClearJd.addEventListener("click", () => {
   clearError();
 });
 
-btnAnalyze.addEventListener("click", () => {
+document.querySelectorAll('input[name="mode"]').forEach((el) => {
+  el.addEventListener("change", () => {
+    const m = selectedMode();
+    modeBadge.textContent = m === "semantic" ? "Mode: semantic (local model)" : "Mode: lite";
+    analyzeHint.textContent =
+      m === "semantic"
+        ? "First semantic run may take a minute while the model downloads and caches."
+        : "";
+  });
+});
+
+btnAnalyze.addEventListener("click", async () => {
   clearError();
   const jd = jdBody.value.trim();
   const resume = resumeBody.value.trim();
@@ -133,10 +154,61 @@ btnAnalyze.addEventListener("click", () => {
     return;
   }
 
-  const out = analyzeLite(jd, resume);
+  const mode = selectedMode();
+  const lite = analyzeLite(jd, resume);
+
+  if (mode === "lite") {
+    renderResults(lite, "lite");
+    return;
+  }
+
+  btnAnalyze.disabled = true;
+  btnAnalyze.textContent = "Running semantic analysis…";
+  try {
+    const sem = await chrome.runtime.sendMessage({
+      type: "SEMANTIC_ANALYZE",
+      jd,
+      resume,
+    });
+    if (!sem?.ok) {
+      showError(sem?.error ?? "Semantic analysis failed.");
+      return;
+    }
+    const merged = {
+      mode: "semantic_embedding" as const,
+      coverage: sem.coverage as number,
+      missingTerms: lite.missingTerms,
+      weakParagraphs: sem.weakParagraphs,
+      disclaimer: `Semantic coverage uses ${sem.modelId} embeddings (mean max‑cosine per JD section). Cached after first download. This is still not a hiring prediction.`,
+    };
+    renderResults(merged, "semantic");
+  } catch (e) {
+    showError(e instanceof Error ? e.message : "Semantic analysis failed.");
+  } finally {
+    btnAnalyze.disabled = false;
+    btnAnalyze.textContent = "Analyze coverage";
+  }
+});
+
+function renderResults(
+  out: {
+    mode: AnalysisMode;
+    coverage: number;
+    missingTerms: GapTerm[];
+    weakParagraphs: ParagraphCoverage[];
+    disclaimer: string;
+  },
+  uiMode: "lite" | "semantic",
+) {
   results.classList.remove("hidden");
   setRing(out.coverage);
-  scoreCaption.textContent = `JD emphasis matched by your resume wording: about ${Math.round(out.coverage * 100)}%.`;
+  if (uiMode === "semantic") {
+    weakHeading.textContent = "JD sections least similar to your resume (semantic)";
+    scoreCaption.textContent = `Semantic alignment (local embeddings): about ${Math.round(out.coverage * 100)}% mean best‑match per JD section.`;
+  } else {
+    weakHeading.textContent = "JD sections with low keyword overlap (lite)";
+    scoreCaption.textContent = `Keyword / emphasis overlap: about ${Math.round(out.coverage * 100)}%.`;
+  }
   disclaimer.textContent = out.disclaimer;
 
   missingTerms.innerHTML = "";
@@ -150,9 +222,17 @@ btnAnalyze.addEventListener("click", () => {
   weakParas.innerHTML = "";
   for (const p of out.weakParagraphs) {
     const li = document.createElement("li");
-    li.textContent = `${(p.score * 100).toFixed(0)}% overlap — ${p.excerpt}${p.excerpt.length >= 180 ? "…" : ""}`;
+    const pct = Math.round(p.score * 100);
+    if (uiMode === "semantic") {
+      li.textContent = `${pct}% best match — ${p.excerpt}${p.excerpt.length >= 200 ? "…" : ""}`;
+    } else {
+      li.textContent = `${pct}% token overlap — ${p.excerpt}${p.excerpt.length >= 180 ? "…" : ""}`;
+    }
     weakParas.append(li);
   }
-});
+
+  modeBadge.textContent =
+    uiMode === "semantic" ? "Mode: semantic (local model)" : "Mode: lite (TF‑IDF)";
+}
 
 void refreshResumeList();

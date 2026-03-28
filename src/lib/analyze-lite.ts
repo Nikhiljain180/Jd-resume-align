@@ -1,4 +1,5 @@
-import type { GapTerm, LiteAnalysisResult, ParagraphCoverage } from "./types.js";
+import type { AnalysisResult, GapTerm, ParagraphCoverage } from "./types.js";
+import { jdParagraphs } from "./chunk.js";
 
 const STOP = new Set(
   "a an the and or but if in on with for to of at by from as is was are were be been being it this that these those you your we our they their not no yes so than then into over out up down about all any some more most other can will just do does did done such".split(
@@ -23,19 +24,12 @@ function termFreq(tokens: string[]): Map<string, number> {
   return m;
 }
 
-function jdParagraphs(jd: string): string[] {
-  return jd
-    .split(/\n{2,}/)
-    .map((p) => p.trim())
-    .filter((p) => p.length > 40);
-}
-
 /**
  * Lite TF‑IDF style coverage: weights JD terms by how characteristic they are of the posting,
  * measures how much of that weight is reflected in the resume wording (set intersection).
  * This is not semantic similarity; ONNX embeddings will improve that in a follow-up.
  */
-export function analyzeLite(jd: string, resume: string): LiteAnalysisResult {
+export function analyzeLite(jd: string, resume: string): AnalysisResult {
   const jdTok = tokenize(jd);
   const resumeTok = tokenize(resume);
   const resumeSet = new Set(resumeTok);
@@ -88,6 +82,6 @@ export function analyzeLite(jd: string, resume: string): LiteAnalysisResult {
     missingTerms: missing.slice(0, 12),
     weakParagraphs: weakParagraphs.slice(0, 6),
     disclaimer:
-      "Lite mode scores keyword / emphasis overlap—it does not predict interview or shortlist odds. Smarter semantic matching is planned via local ONNX embeddings.",
+      "Lite mode scores keyword / emphasis overlap only—it does not predict interview or shortlist odds. Use Semantic mode for local transformer embeddings.",
   };
 }

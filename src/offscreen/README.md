@@ -1,11 +1,5 @@
-# Offscreen document (planned)
+# Offscreen document
 
-Manifest V3 service workers are poor hosts for heavy WASM. The ONNX Runtime Web path should live in an **offscreen document** loaded by the background worker.
+Loads **`@xenova/transformers`** (`feature-extraction` on `Xenova/all-MiniLM-L6-v2`) for JD/resume chunk embeddings. The service worker creates this document with reason `WORKERS` and relays `OFFSCREEN_ANALYZE` from the side panel.
 
-When implemented:
-
-- Add `offscreen` permission to `src/manifest.json`.
-- Bundle `src/offscreen/main.ts` + HTML entry via Vite.
-- Background creates the offscreen document once per session and forwards embed jobs with cancellation support.
-
-Until then, **lite analysis** runs entirely in the side panel.
+See [README.md](../../README.md) for permissions and privacy notes.

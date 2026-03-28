@@ -35,6 +35,15 @@ function extensionManifestPlugin() {
         html = html.replaceAll("../../assets/", "../assets/");
         writeFileSync(resolve(flatPanelDir, "index.html"), html);
       }
+      const nestedOff = resolve(dist, "src/offscreen/index.html");
+      const flatOffDir = resolve(dist, "offscreen");
+      if (existsSync(nestedOff)) {
+        if (!existsSync(flatOffDir)) mkdirSync(flatOffDir, { recursive: true });
+        let html = readFileSync(nestedOff, "utf8");
+        html = html.replaceAll("../../offscreen.js", "../offscreen.js");
+        html = html.replace(/\.\.\/\.\.\/chunks\//g, "../chunks/");
+        writeFileSync(resolve(flatOffDir, "index.html"), html);
+      }
       const legacySrc = resolve(dist, "src");
       if (existsSync(legacySrc)) {
         try {
@@ -57,6 +66,9 @@ function extensionManifestPlugin() {
 export default defineConfig({
   base: "./",
   plugins: [extensionManifestPlugin()],
+  optimizeDeps: {
+    exclude: ["@xenova/transformers"],
+  },
   build: {
     outDir: "dist",
     emptyOutDir: true,
@@ -65,6 +77,7 @@ export default defineConfig({
       input: {
         background: resolve(__dirname, "src/background/index.ts"),
         sidepanel: resolve(__dirname, "src/sidepanel/index.html"),
+        offscreen: resolve(__dirname, "src/offscreen/index.html"),
         "content/linkedin": resolve(__dirname, "src/content/linkedin.ts"),
       },
       output: {

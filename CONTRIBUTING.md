@@ -38,14 +38,17 @@ For v1 we prefer **generic paste** over fragile scrapers. If you add a site-spec
 - Register it in `src/manifest.json` with **minimal** `host_permissions`.
 - Document test URLs and failure modes in the PR.
 
-### ONNX / WASM semantic mode (roadmap)
+### Semantic (embeddings) mode
 
-Planned architecture:
+Implemented in `src/offscreen/main.ts` via **`@xenova/transformers`**. The background worker ensures a single offscreen document (`chrome.offscreen`) and relays `OFFSCREEN_ANALYZE` messages.
 
-- **Offscreen document** loads **ONNX Runtime Web** and a **small embedding model**.
-- Side panel sends chunks; offscreen returns embeddings; side panel computes cosine similarity.
+Contributions welcome:
 
-If you pick this up, open a **draft PR early** with model name, size, license, and cold/warm timings on one reference laptop.
+- **Model choice:** smaller / multilingual checkpoints (document size & license).
+- **Batching** embeddings for fewer round-trips (watch memory on long JDs).
+- **Store review:** onnxruntime-web bundles may use `eval`; call out mitigations or alternatives if you know them.
+
+Open a **draft PR early** with cold/warm timings on a reference laptop if you change the model stack.
 
 ### Code style
 
@@ -59,7 +62,4 @@ See [README.md](README.md) for `npm install` and loading `dist/` unpacked.
 
 ## Maintainer note
 
-When you fork or publish the canonical repo, update:
-
-- README “GitHub” link in `src/sidepanel/index.html`
-- This file’s examples and any store URLs
+When you publish a fork, update links in the side panel header and this file if your origin changes.

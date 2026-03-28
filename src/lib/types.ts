@@ -5,7 +5,7 @@ export type ResumeProfile = {
   updatedAt: number;
 };
 
-export type AnalysisMode = "lite_tfidf";
+export type AnalysisMode = "lite_tfidf" | "semantic_embedding";
 
 export type GapTerm = {
   term: string;
@@ -14,14 +14,18 @@ export type GapTerm = {
 
 export type ParagraphCoverage = {
   excerpt: string;
+  /** 0–1 higher means better alignment with resume for this JD excerpt */
   score: number;
 };
 
-export type LiteAnalysisResult = {
+export type AnalysisResult = {
   mode: AnalysisMode;
-  /** 0–1 estimated coverage of JD emphasis by resume tokens */
+  /** 0–1 coverage of JD vs resume (method depends on mode) */
   coverage: number;
   missingTerms: GapTerm[];
   weakParagraphs: ParagraphCoverage[];
   disclaimer: string;
 };
+
+/** @deprecated use AnalysisResult */
+export type LiteAnalysisResult = AnalysisResult;
